@@ -30,6 +30,13 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="text-and-sound"
+        options={{
+          title: 'Text & Sound',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="textformat.size" color={color} />,
+        }}
+      />
     </Tabs>
   );
 }
