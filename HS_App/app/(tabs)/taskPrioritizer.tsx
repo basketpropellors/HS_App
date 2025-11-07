@@ -1,24 +1,42 @@
 import React from 'react';
-import { StyleSheet, View, FlatList } from 'react-native';
+import { StyleSheet, View, FlatList, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useTasks, Task } from '@/context/TasksContext';
 
 export default function TaskPrioritizerScreen() {
-  const tasks = [
-    { id: '1', title: 'Complete project proposal', priority: 'High' },
-    { id: '2', title: 'Review marketing materials', priority: 'Medium' },
-    { id: '3', title: 'Schedule team meeting', priority: 'Low' },
-    { id: '4', title: 'Prepare for presentation', priority: 'High' },
-  ];
+  const { tasks, updateTask } = useTasks();
 
-  const renderItem = ({ item }: { item: { id: string; title: string; priority: string } }) => (
+  const changePriority = (task: Task, newPriority: 'High' | 'Medium' | 'Low') => {
+    updateTask({ ...task, priority: newPriority });
+  };
+
+  const renderItem = ({ item }: { item: Task }) => (
     <ThemedView style={styles.taskItem}>
-      <IconSymbol
-        name={getPriorityIcon(item.priority)}
-        size={24}
-        color={getPriorityColor(item.priority)}
-      />
+      <View style={styles.priorityButtons}>
+        <TouchableOpacity onPress={() => changePriority(item, 'High')}>
+          <IconSymbol
+            name="arrow.up.circle.fill"
+            size={24}
+            color={item.priority === 'High' ? '#FF0000' : '#ccc'}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => changePriority(item, 'Medium')}>
+          <IconSymbol
+            name="arrow.right.circle.fill"
+            size={24}
+            color={item.priority === 'Medium' ? '#FFA500' : '#ccc'}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => changePriority(item, 'Low')}>
+          <IconSymbol
+            name="arrow.down.circle.fill"
+            size={24}
+            color={item.priority === 'Low' ? '#008000' : '#ccc'}
+          />
+        </TouchableOpacity>
+      </View>
       <ThemedText style={styles.taskTitle}>{item.title}</ThemedText>
       <ThemedText style={[styles.taskPriority, { color: getPriorityColor(item.priority) }]}>
         {item.priority}
@@ -39,23 +57,13 @@ export default function TaskPrioritizerScreen() {
     }
   };
 
-  const getPriorityIcon = (priority: string) => {
-    switch (priority) {
-      case 'High':
-        return 'arrow.up.circle.fill';
-      case 'Medium':
-        return 'arrow.right.circle.fill';
-      case 'Low':
-        return 'arrow.down.circle.fill';
-      default:
-        return 'questionmark.circle.fill';
-    }
-  };
-
   return (
     <ThemedView style={styles.container}>
       <FlatList
-        data={tasks}
+        data={[...tasks].sort((a, b) => {
+          const priorityOrder = { High: 3, Medium: 2, Low: 1 };
+          return priorityOrder[b.priority] - priorityOrder[a.priority];
+        })}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContainer}
@@ -79,6 +87,9 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderWidth: 1,
     borderColor: '#ccc',
+  },
+  priorityButtons: {
+    flexDirection: 'row',
   },
   taskTitle: {
     fontSize: 16,
