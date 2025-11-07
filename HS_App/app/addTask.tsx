@@ -1,37 +1,34 @@
-import React from 'react';
-import { StyleSheet, TextInput, View, Button } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, TextInput, View, Button, Alert } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useRouter } from 'expo-router';
+import { useTasks } from '@/context/TasksContext';
 
 export default function AddTaskScreen() {
   const router = useRouter();
-  const [taskName, setTaskName] = React.useState('');
-  const [description, setDescription] = React.useState('');
-  const [dueDate, setDueDate] = React.useState('');
-  const [priority, setPriority] = React.useState('Medium');
+  const { addTask } = useTasks();
+  const [title, setTitle] = useState('');
+  const [dueDate, setDueDate] = useState('');
+  const [priority, setPriority] = useState<'High' | 'Medium' | 'Low'>('Medium');
 
   const handleAddTask = () => {
-    // Logic to add the task will go here
+    if (!title || !dueDate) {
+      Alert.alert('Validation Error', 'Task Title and Due Date are required.');
+      return;
+    }
+    addTask({ title, dueDate, priority });
     router.back();
   };
 
   return (
     <ThemedView style={styles.container}>
-      <ThemedText style={styles.label}>Task Name</ThemedText>
+      <ThemedText style={styles.label}>Task Title</ThemedText>
       <TextInput
         style={styles.input}
-        value={taskName}
-        onChangeText={setTaskName}
-        placeholder="Enter task name"
-      />
-      <ThemedText style={styles.label}>Description</ThemedText>
-      <TextInput
-        style={styles.input}
-        value={description}
-        onChangeText={setDescription}
-        placeholder="Enter task description"
-        multiline
+        value={title}
+        onChangeText={setTitle}
+        placeholder="Enter task title"
       />
       <ThemedText style={styles.label}>Due Date</ThemedText>
       <TextInput

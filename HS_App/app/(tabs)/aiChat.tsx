@@ -1,26 +1,46 @@
-import React from 'react';
-import { StyleSheet, TextInput, View, ScrollView } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { StyleSheet, TextInput, View, ScrollView, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { IconSymbol } from '@/components/ui/icon-symbol';
 
 export default function AiChatScreen() {
-  const [messages, setMessages] = React.useState([
+  const [messages, setMessages] = useState([
     { id: '1', text: 'Hello! How can I help you today?', sender: 'bot' },
-    { id: '2', text: 'I need to organize my tasks for the week.', sender: 'user' },
-    { id: '3', text: 'Of course. I can help with that. What is your first task?', sender: 'bot' },
   ]);
-  const [inputText, setInputText] = React.useState('');
+  const [inputText, setInputText] = useState('');
+  const scrollViewRef = useRef<ScrollView>(null);
 
-  const handleSendMessage = () => {
+  const sendMessageToAI = async (message: string) => {
+    // Placeholder for API call
+    return new Promise<{ text: string }>((resolve) => {
+      setTimeout(() => {
+        resolve({ text: `You said: "${message}"` });
+      }, 1000);
+    });
+  };
+
+  const handleSendMessage = async () => {
     if (inputText.trim()) {
-      setMessages([...messages, { id: String(messages.length + 1), text: inputText, sender: 'user' }]);
+      const newUserMessage = { id: String(messages.length + 1), text: inputText, sender: 'user' };
+      setMessages((prevMessages) => [...prevMessages, newUserMessage]);
       setInputText('');
+
+      const aiResponse = await sendMessageToAI(inputText);
+      const newBotMessage = { id: String(messages.length + 2), text: aiResponse.text, sender: 'bot' };
+      setMessages((prevMessages) => [...prevMessages, newBotMessage]);
+
+      scrollViewRef.current?.scrollToEnd({ animated: true });
     }
   };
 
   return (
     <ThemedView style={styles.container}>
-      <ScrollView style={styles.chatContainer}>
+      <ScrollView
+        style={styles.chatContainer}
+        ref={scrollViewRef}
+        onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+      >
         {messages.map((message) => (
           <ThemedView
             key={message.id}
@@ -41,6 +61,9 @@ export default function AiChatScreen() {
           onChangeText={setInputText}
           onSubmitEditing={handleSendMessage}
         />
+        <TouchableOpacity onPress={handleSendMessage}>
+            <IconSymbol name="paperplane.fill" size={24} color="#007BFF" />
+        </TouchableOpacity>
       </View>
     </ThemedView>
   );
@@ -68,6 +91,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 20,
     paddingHorizontal: 15,
+    marginRight: 10,
   },
   messageBubble: {
     padding: 10,
